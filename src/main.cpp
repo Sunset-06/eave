@@ -1,5 +1,4 @@
-#include<iostream>
-#include "../include/main.h"
+#include <main.h>
 
 int main(){
     std::cout << GREET << std::endl;
