@@ -7,6 +7,6 @@
 
 #define MAIN_H
 
-#define GREET "Hi"
+#define GREET "Triangle simulation complete"
 
 #endif 
