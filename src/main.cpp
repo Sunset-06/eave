@@ -5,14 +5,28 @@ const int SCREEN_HEIGHT = 480;
 
 bool exit_flag = false;
 
-float triangle[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
+float t1[] = {
+    -0.5f,  0.3f, 0.0f,
+    -0.3f,  0.0f, 0.0f,
+    -0.9f, -0.5f, 0.0f 
 };
 
-unsigned int VBO;
-unsigned int VAO;
+float t2[] = {
+    0.6f,  0.7f, 0.0f,
+    0.1f,  0.5f, 0.0f,
+    0.3f, -0.7f, 0.0f
+};
+unsigned int indices[] = {
+    0, 1, 2
+};
+
+unsigned int t1_VBO;
+unsigned int t1_VAO;
+unsigned int t1_EBO;
+
+unsigned int t2_VBO;
+unsigned int t2_VAO;
+unsigned int t2_EBO;
     
 
 const char *vertexShaderSource = "#version 330 core\n"
@@ -56,6 +70,8 @@ int main(){
         printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
         return 1;
     }
+
+    setup();
 
     // Creating the window
     window = SDL_CreateWindow(
@@ -127,14 +143,31 @@ int main(){
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
+
     // creating buffer vbo and assigning id 1
-    glGenBuffers(1, &VBO);
-    // binding vbo as an array buffer
-    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &t1_VBO);
+    glGenBuffers(1, &t1_EBO);
+    glGenVertexArrays(1, &t1_VAO);
+
+    glGenBuffers(1, &t2_VBO);
+    glGenBuffers(1, &t2_EBO);
+    glGenVertexArrays(1, &t2_VAO);
+
     
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW);
+    glBindVertexArray(t1_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, t1_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(t1), t1, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, t1_EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);  
+
+    glBindVertexArray(t2_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, t2_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(t2), t2, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, t2_EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);  
@@ -150,8 +183,15 @@ int main(){
         glClearColor(0.0f, 0.35f, 0.4f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);    
         glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        glBindVertexArray(t1_VAO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, t1_EBO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        
+        glBindVertexArray(t2_VAO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, t1_EBO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        
         SDL_GL_SwapWindow(window);
     }
 
