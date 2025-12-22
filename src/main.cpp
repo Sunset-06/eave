@@ -1,6 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#include <main.h>
+#include <vis.h>
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -34,32 +34,18 @@ unsigned int t1_VBO;
 unsigned int t1_VAO;
 unsigned int t1_EBO;
 
+
 unsigned int t2_VBO;
 unsigned int t2_VAO;
 unsigned int t2_EBO;
     
+const char* vertexShader = 
+#include "vertex.glsl"
+"";
 
-const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "layout (location = 1) in vec2 aTexCoord;\n"
-    "out vec2 TexCoord;\n"
-
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "   TexCoord = aTexCoord;\n"
-    "}\0";
-
-const char *fragShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-
-    "in vec2 TexCoord;\n"
-    "uniform sampler2D ourTexture;\n"
-    "void main()\n"
-    "{\n"
-//    "    FragColor = vec4(0.6f, 0.2f, 0.7f, 1.0f);\n"
-      "    FragColor = texture(ourTexture, TexCoord);\n"
-    "}\0";
+const char *fragShader = 
+#include "fragment.glsl"
+"";
 
 void setup(){
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -126,7 +112,7 @@ int main(){
     // Vertex Shader
     unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glShaderSource(vertexShader, 1, &vertexShader, NULL);
     glCompileShader(vertexShader);
     int  success;
     char infoLog[512];
@@ -143,7 +129,7 @@ int main(){
     // Fragment Shader
     unsigned int fragmentShader;
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragShaderSource, NULL);
+    glShaderSource(fragmentShader, 1, &fragShader, NULL);
     glCompileShader(fragmentShader);
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if(!success)
@@ -164,7 +150,7 @@ int main(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("texture.jpeg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("tex/texture.jpeg", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
