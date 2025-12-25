@@ -10,19 +10,30 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PULSE REQUIRED libpulse-simple)
 
-file(GLOB_RECURSE SOURCE_FILES "src/*.cpp")
-list(APPEND SOURCE_FILES "src/glad.c")
+file(GLOB_RECURSE VIS_SOURCES "src/vis/*.cpp")
+file(GLOB_RECURSE AUD_SOURCES "src/aud/*.cpp")
+
+set(SOURCE_FILES
+    ${VIS_SOURCES}
+    ${AUD_SOURCES}
+    src/vis/glad.c
+)
 
 add_executable(eave ${SOURCE_FILES})
 
 target_include_directories(eave PUBLIC 
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    ${PULSE_INCLUDE_DIRS}
 )
 
 target_link_libraries(eave PRIVATE
     SDL2::SDL2
-    OpenGL::GL 
+    OpenGL::GL
+    ${PULSE_LIBRARIES}
+
 )
 
 install(TARGETS eave DESTINATION build)

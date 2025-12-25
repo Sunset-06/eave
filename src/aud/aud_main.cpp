@@ -2,7 +2,7 @@
 #include<aud.h>
 
 
-int main(int argc, const char * argv[]){
+int aud_thread(int argc, const char * argv[]){
 
     pa_sample_spec spec;
     spec.format = PA_SAMPLE_FLOAT32LE;
@@ -65,6 +65,5 @@ int main(int argc, const char * argv[]){
     }
 
     pa_simple_free(aud_stream);
-
+    return 0;
 }
-

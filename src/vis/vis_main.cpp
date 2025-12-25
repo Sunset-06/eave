@@ -39,11 +39,11 @@ unsigned int t2_VBO;
 unsigned int t2_VAO;
 unsigned int t2_EBO;
     
-const char* vertexShader = 
+const char *vertexShaderSrc = 
 #include "vertex.glsl"
 "";
 
-const char *fragShader = 
+const char *fragShaderSrc = 
 #include "fragment.glsl"
 "";
 
@@ -112,7 +112,7 @@ int main(){
     // Vertex Shader
     unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShader, NULL);
+    glShaderSource(vertexShader, 1, &vertexShaderSrc, NULL);
     glCompileShader(vertexShader);
     int  success;
     char infoLog[512];
@@ -129,7 +129,7 @@ int main(){
     // Fragment Shader
     unsigned int fragmentShader;
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragShader, NULL);
+    glShaderSource(fragmentShader, 1, &fragShaderSrc, NULL);
     glCompileShader(fragmentShader);
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if(!success)
