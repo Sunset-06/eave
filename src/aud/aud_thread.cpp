@@ -1,8 +1,9 @@
-//#include "aud.h"
+#include<core.h>
 #include<aud.h>
+#include <atomic>   
 
 
-int aud_thread(int argc, const char * argv[]){
+int aud_thread(){
 
     pa_sample_spec spec;
     spec.format = PA_SAMPLE_FLOAT32LE;
@@ -61,7 +62,7 @@ int aud_thread(int argc, const char * argv[]){
         }
 
         float rms = std::sqrt(sum / buffer.size());
-        std::cout << "\rRMS: " << rms << std::flush;
+        //std::cout << "\rRMS: " << rms << std::flush;
     }
 
     pa_simple_free(aud_stream);

@@ -1,5 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include <core.h>
 #include <vis.h>
 
 const int SCREEN_WIDTH = 640;
@@ -8,22 +9,9 @@ const int SCREEN_HEIGHT = 480;
 bool exit_flag = false;
 
 float t1[] = {
-    -0.5f,  0.3f, 0.0f,
-    -0.3f,  0.0f, 0.0f,
-    -0.9f, -0.5f, 0.0f 
-};
-
-float t2[] = {
-    // Vertex coords   // Tex coords
-    0.9f,  0.7f, 0.0f, 0.0f, 0.0f,
-    0.1f,  0.5f, 0.0f, 1.0f, 0.0f,
-    0.3f, -0.7f, 0.0f, 0.5f, 1.0f 
-};
-
-float texCoords[] = {
-    0.0f, 0.0f,  // lower-left corner  
-    1.0f, 0.0f,  // lower-right corner
-    0.5f, 1.0f   // top-center corner
+    -0.1f,  0.3f, 0.0f,
+     0.2f,  0.0f, 0.0f,
+    -0.3f, -0.3f, 0.0f 
 };
 
 unsigned int indices[] = {
@@ -34,10 +22,6 @@ unsigned int t1_VBO;
 unsigned int t1_VAO;
 unsigned int t1_EBO;
 
-
-unsigned int t2_VBO;
-unsigned int t2_VAO;
-unsigned int t2_EBO;
     
 const char *vertexShaderSrc = 
 #include "vertex.glsl"
@@ -50,26 +34,24 @@ const char *fragShaderSrc =
 void setup(){
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    // Request an OpenGL 3.3 Context (a common starting point)
+    // OpenGL 3.3
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
-    // Set the size of the buffer components (e.g., 8 bits for Red, Green, Blue, Alpha)
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
-    // Set double buffering (Crucial for smooth animation)
     // This means we draw to a hidden back buffer and swap it to the front buffer when done.
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 }
 
 
-int main(){
+int vis_thread(){
     SDL_Window* window = NULL;
     
-    // Iitializing SDL - Only Video for now, we'll need audio later
+    // Initializing SDL - Only Video for now, we'll need audio later
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
         return 1;
@@ -141,26 +123,6 @@ int main(){
         std::cout << "Fragment Shader compiled\n";
     }
 
-    // Texture
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load("tex/texture.jpeg", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-
     unsigned int shaderProgram;
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
@@ -173,11 +135,6 @@ int main(){
     glGenBuffers(1, &t1_EBO);
     glGenVertexArrays(1, &t1_VAO);
 
-    glGenBuffers(1, &t2_VBO);
-    glGenBuffers(1, &t2_EBO);
-    glGenVertexArrays(1, &t2_VAO);
-
-    
     glBindVertexArray(t1_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, t1_VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(t1), t1, GL_STATIC_DRAW);
@@ -187,14 +144,7 @@ int main(){
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);  
 
-    glBindVertexArray(t2_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, t2_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(t2), t2, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, t2_EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-
-    size_t stride = 5 * sizeof(float); 
+    size_t stride = 3 * sizeof(float); 
 
     // Position attribute (layout location 0): 3 floats, starts at offset 0
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
@@ -216,13 +166,12 @@ int main(){
         glClear(GL_COLOR_BUFFER_BIT);    
         glUseProgram(shaderProgram);
 
+        float current_rms = audio_buffer.load();
+        std::cout << "RMS: "<< current_rms<< "\n";
+        int rmsLoc = glGetUniformLocation(shaderProgram, "u_rms");
+        glUniform1f(rmsLoc, current_rms); 
+
         glBindVertexArray(t1_VAO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, t1_EBO);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
-        
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glBindVertexArray(t2_VAO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, t1_EBO);
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
         
         SDL_GL_SwapWindow(window);
@@ -230,7 +179,7 @@ int main(){
 
     SDL_DestroyWindow(window);
     SDL_Quit();
-    stbi_image_free(data);
+    //stbi_image_free(data);
 
 
     std::cout << GREET << std::endl;

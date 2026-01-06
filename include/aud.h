@@ -4,10 +4,6 @@
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
-#include <iostream>
-#include <vector>
-#include <cmath>
-
 // My usb port
 #define MY_SOURCE "alsa_output.usb-Generic_AB13X_USB_Audio_20210726905926-00.analog-stereo.monitor"
 

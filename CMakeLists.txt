@@ -20,6 +20,7 @@ set(SOURCE_FILES
     ${VIS_SOURCES}
     ${AUD_SOURCES}
     src/vis/glad.c
+    src/main.cpp
 )
 
 add_executable(eave ${SOURCE_FILES})
