@@ -63,6 +63,7 @@ int aud_thread(){
 
         float rms = std::sqrt(sum / buffer.size());
         //std::cout << "\rRMS: " << rms << std::flush;
+        audio_buffer.store(rms);
     }
 
     pa_simple_free(aud_stream);
