@@ -1,7 +1,6 @@
 #include<core.h>
 #include<aud.h>
-#include <atomic>   
-
+#include<atomic>   
 
 int aud_thread(){
 
@@ -33,11 +32,15 @@ int aud_thread(){
         return 1;
     }
 
+    // init the fft library and its input and output array
+    kiss_fft_cfg cfg = kiss_fft_alloc(512, 0, nullptr, nullptr);
+    kiss_fft_cpx in[512];
+    kiss_fft_cpx out[512];
+
     // buffer size and memory alloc 
     constexpr size_t FRAMES = 512;
     std::vector<float> buffer(FRAMES * spec.channels);
     // The buffer is a circular queue
-    // stereo audio will be interleaved just like admge.
 
     // what this loop does is 
     //    -block the thread
@@ -55,17 +58,29 @@ int aud_thread(){
             break;
         }
 
-        // Compute RMS volume
-        float sum = 0.0f;
-        for (float s : buffer) {
-            sum += s * s;
+        // converting the stereo input to mono input
+        for (int i = 0; i < 512; i++) {
+            in[i].r = (buffer[i * 2] + buffer[i * 2 + 1]) / 2.0f;;
+            in[i].i = 0.0f;
         }
 
-        float rms = std::sqrt(sum / buffer.size());
-        //std::cout << "\rRMS: " << rms << std::flush;
-        audio_buffer.store(rms);
+        kiss_fft(cfg, in, out);
+
+        // first half of the output arr - positive frequencies
+        // out[0] is the dc bin - min frequency
+        // out[nfft/2] will be the nyquist frequency - max frequency
+        // second half of the out array is negative frequecies and is useless
+        
+        // getting only the first 5 bins for bass
+        float magnitude = 0;
+        for (int k = 1; k < 6; k++) {
+            magnitude += std::sqrt(out[k].r * out[k].r + out[k].i * out[k].i);
+        }
+
+        audio_buffer.store(magnitude/5);
     }
 
     pa_simple_free(aud_stream);
+    kiss_fft_free(cfg);
     return 0;
 }

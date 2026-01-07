@@ -6,13 +6,12 @@
 #include <vector>
 #include <cmath>
 #include <atomic>
+#include<complex>
 
 extern std::atomic<float> audio_buffer;
 extern bool exit_flag;
 
 extern int vis_thread();
 extern int aud_thread();
-
-
 
 #endif

@@ -9,9 +9,9 @@ const int SCREEN_HEIGHT = 480;
 bool exit_flag = false;
 
 float t1[] = {
-    -0.1f,  0.3f, 0.0f,
-     0.2f,  0.0f, 0.0f,
-    -0.3f, -0.3f, 0.0f 
+     0.0f,  0.3f, 0.0f,
+     0.3f,  0.0f, 0.0f,
+    -0.2f, -0.3f, 0.0f 
 };
 
 unsigned int indices[] = {
@@ -61,7 +61,7 @@ int vis_thread(){
     //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     // Creating the window
     window = SDL_CreateWindow(
-        "Hello",
+        "Look at that Triangle go",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         SCREEN_WIDTH,
@@ -150,10 +150,6 @@ int vis_thread(){
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Texture attribute (layout location 1): 2 floats, starts at offset 3 * sizeof(float)
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
     SDL_Event e;
 
     while (!exit_flag) {
@@ -167,9 +163,12 @@ int vis_thread(){
         glUseProgram(shaderProgram);
 
         float current_rms = audio_buffer.load();
-        std::cout << "RMS: "<< current_rms<< "\n";
-        int rmsLoc = glGetUniformLocation(shaderProgram, "u_rms");
-        glUniform1f(rmsLoc, current_rms); 
+        int rmsLoc = glGetUniformLocation(shaderProgram, "inp_val");
+        glUniform1f(rmsLoc, current_rms);
+
+        float timeValue = SDL_GetTicks() / 1000.0f;
+        int timeLoc = glGetUniformLocation(shaderProgram, "curr_time");
+        glUniform1f(timeLoc, timeValue);
 
         glBindVertexArray(t1_VAO);
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
