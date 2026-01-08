@@ -72,12 +72,15 @@ int aud_thread(){
         // second half of the out array is negative frequecies and is useless
         
         // getting only the first 5 bins for bass
-        float magnitude = 0;
+        float max_magnitude = 0;
         for (int k = 1; k < 6; k++) {
-            magnitude += std::sqrt(out[k].r * out[k].r + out[k].i * out[k].i);
+            max_magnitude += std::sqrt(out[k].r * out[k].r + out[k].i * out[k].i);
+            float mag = std::sqrt(out[k].r * out[k].r + out[k].i * out[k].i);
+            if (mag > max_magnitude) max_magnitude = mag;
+            //max_magnitude += std::sqrt(out[k].r * out[k].r + out[k].i * out[k].i);
         }
 
-        audio_buffer.store(magnitude/5);
+        audio_buffer.store(max_magnitude);
     }
 
     pa_simple_free(aud_stream);

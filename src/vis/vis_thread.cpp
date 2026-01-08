@@ -3,24 +3,27 @@
 #include <core.h>
 #include <vis.h>
 
-const int SCREEN_WIDTH = 640;
+const int SCREEN_WIDTH = 720;
 const int SCREEN_HEIGHT = 480;
 
 bool exit_flag = false;
 
-float t1[] = {
-     0.0f,  0.3f, 0.0f,
-     0.3f,  0.0f, 0.0f,
-    -0.2f, -0.3f, 0.0f 
+float r1[] = {
+     1.0f,  0.1f, 0.0f,  // top right
+     1.0f,  0.0f, 0.0f,  // bottom right
+    -1.0f,  0.0f, 0.0f,  // bottom left
+    -1.0f,  0.1f, 0.0f   // top left
 };
+unsigned int r1_indices[] = {
+    0, 1, 3,
+    1, 2, 3
+};  
 
-unsigned int indices[] = {
-    0, 1, 2
-};
-
-unsigned int t1_VBO;
-unsigned int t1_VAO;
-unsigned int t1_EBO;
+unsigned int r1_VBO;
+unsigned int r1_VAO;
+unsigned int r1_EBO;
+static float smooth_rms = 0.0f;
+const float smoothing_factor = 0.15f;
 
     
 const char *vertexShaderSrc = 
@@ -45,6 +48,8 @@ void setup(){
 
     // This means we draw to a hidden back buffer and swap it to the front buffer when done.
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    // VSync
+    SDL_GL_SetSwapInterval(1);
 }
 
 
@@ -66,7 +71,7 @@ int vis_thread(){
         SDL_WINDOWPOS_CENTERED,
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
+        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
     );
 
     if (window == NULL) {
@@ -131,15 +136,15 @@ int vis_thread(){
 
 
     // creating buffer vbo and assigning id 1
-    glGenBuffers(1, &t1_VBO);
-    glGenBuffers(1, &t1_EBO);
-    glGenVertexArrays(1, &t1_VAO);
+    glGenBuffers(1, &r1_VBO);
+    glGenBuffers(1, &r1_EBO);
+    glGenVertexArrays(1, &r1_VAO);
 
-    glBindVertexArray(t1_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, t1_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(t1), t1, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, t1_EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBindVertexArray(r1_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, r1_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(r1), r1, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r1_EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(r1_indices), r1_indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);  
@@ -163,15 +168,23 @@ int vis_thread(){
         glUseProgram(shaderProgram);
 
         float current_rms = audio_buffer.load();
+        smooth_rms += (current_rms - smooth_rms) * smoothing_factor;
+
+        if(smooth_rms < current_rms)
+            smooth_rms = current_rms;
+        else {
+            smooth_rms -= 0.05f;
+            if (smooth_rms < 0.0f) smooth_rms = 0.0f;
+        }
         int rmsLoc = glGetUniformLocation(shaderProgram, "inp_val");
-        glUniform1f(rmsLoc, current_rms);
+        glUniform1f(rmsLoc, smooth_rms);
 
         float timeValue = SDL_GetTicks() / 1000.0f;
         int timeLoc = glGetUniformLocation(shaderProgram, "curr_time");
         glUniform1f(timeLoc, timeValue);
 
-        glBindVertexArray(t1_VAO);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(r1_VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         
         SDL_GL_SwapWindow(window);
     }
@@ -184,3 +197,16 @@ int vis_thread(){
     std::cout << GREET << std::endl;
     return 0;
 }
+
+/* 
+Rotation impl.:
+    float s = sin(curr_time*0.1);
+    float c = cos(curr_time*0.1);
+
+    mat4 rotation = mat4(
+        vec4(c,   s,  0.0, 0.0),
+        vec4(-s,  c,  0.0, 0.0),
+        vec4(0.0, 0.0, 1.0, 0.0),
+        vec4(0.0, 0.0, 0.0, 1.0)
+    );
+*/
