@@ -23,15 +23,17 @@ unsigned int r1_VBO;
 unsigned int r1_VAO;
 unsigned int r1_EBO;
 static float smooth_rms = 0.0f;
-const float smoothing_factor = 0.15f;
+const float smoothing_factor = 0.10f;
+//const float up_smoothing_factor = 0.30f;
+
 
     
 const char *vertexShaderSrc = 
-#include "vertex.glsl"
+#include "shaders/vertex.glsl"
 "";
 
 const char *fragShaderSrc = 
-#include "fragment.glsl"
+#include "shaders/fragment.glsl"
 "";
 
 void setup(){
@@ -66,7 +68,7 @@ int vis_thread(){
     //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     // Creating the window
     window = SDL_CreateWindow(
-        "Look at that Triangle go",
+        "Look at those bars go",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         SCREEN_WIDTH,
@@ -167,11 +169,16 @@ int vis_thread(){
         glClear(GL_COLOR_BUFFER_BIT);    
         glUseProgram(shaderProgram);
 
-        float current_rms = audio_buffer.load();
+        float current_rms;
+
+        while (shared_buffer.buf_pop(current_rms)) {
+            //std::cout<<"popped\n";
+        }
         smooth_rms += (current_rms - smooth_rms) * smoothing_factor;
 
         if(smooth_rms < current_rms)
-            smooth_rms = current_rms;
+            smooth_rms += 0.50f;
+            //if (smooth_rms > 1.0f) smooth_rms = 0.0f;
         else {
             smooth_rms -= 0.05f;
             if (smooth_rms < 0.0f) smooth_rms = 0.0f;

@@ -5,7 +5,7 @@
 #include <vis.h>
 #include <aud.h>
 
-std::atomic<float> audio_buffer(0.0f);
+RingBuffer shared_buffer;
 extern bool exit_flag;
 
 int main(int argc, char* argv[]) {
@@ -13,9 +13,7 @@ int main(int argc, char* argv[]) {
     vis_thread();
 
     exit_flag = true;
-    if (audio_thread.joinable()) {
-        audio_thread.join();
-    }
+    audio_thread.join();
 
     return 0;
 }

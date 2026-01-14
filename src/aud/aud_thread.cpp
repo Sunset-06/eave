@@ -10,6 +10,17 @@ int aud_thread(){
     spec.channels = 2;
 
 
+
+    // Setting things up for lower latency
+    // Here, -1 is default, since I only really want to change the fragsize
+    pa_buffer_attr buffer_attr;
+    buffer_attr.maxlength = (uint32_t) -1;
+    buffer_attr.tlength   = (uint32_t) -1;
+    buffer_attr.prebuf    = (uint32_t) -1;
+    buffer_attr.minreq    = (uint32_t) -1;
+    buffer_attr.fragsize = pa_usec_to_bytes(20 * 1000, &spec);
+    // This is going to be sent to the pulse audio constructor
+
     // This is one long constructor damn
 
     // nullptr give default values, MY_SOURCE is my usb port
@@ -22,7 +33,7 @@ int aud_thread(){
         "Audio Capture",                // what i'm doing
         &spec,                          // pointer to the specs above 
         nullptr,                        // channel layout (stereo/mono etc.) this will use default from thhe source
-        nullptr,                        // Buffer attributes (unsure, so just default)
+        &buffer_attr,                   // Buffer attributes (Defined above)
         &error                          // the error handler
     );
 
@@ -49,7 +60,7 @@ int aud_thread(){
     //    -unblock
 
 
-    while (true) {
+    while (!exit_flag) {
         if (pa_simple_read(aud_stream, buffer.data(),
                         buffer.size() * sizeof(float),
                         &error) < 0) {
@@ -80,7 +91,9 @@ int aud_thread(){
             //max_magnitude += std::sqrt(out[k].r * out[k].r + out[k].i * out[k].i);
         }
 
-        audio_buffer.store(max_magnitude);
+        if (!shared_buffer.buf_push(max_magnitude)) {
+            std::cout<<"Dropped a value\n";
+        }
     }
 
     pa_simple_free(aud_stream);
