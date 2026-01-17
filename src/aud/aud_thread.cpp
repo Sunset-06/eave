@@ -69,9 +69,11 @@ int aud_thread(){
             break;
         }
 
-        // converting the stereo input to mono input
+        // converting the stereo input to mono input and applying hann window
         for (int i = 0; i < 512; i++) {
-            in[i].r = (buffer[i * 2] + buffer[i * 2 + 1]) / 2.0f;;
+            float window = 0.5f * (1.0f - cosf(2.0f * M_PI * i / 511.0f));
+            float mono = (buffer[i * 2] + buffer[i * 2 + 1]) / 2.0f;
+            in[i].r = mono * window;
             in[i].i = 0.0f;
         }
 
@@ -83,15 +85,38 @@ int aud_thread(){
         // second half of the out array is negative frequecies and is useless
         
         // getting only the first 5 bins for bass
-        float max_magnitude = 0;
-        for (int k = 1; k < 6; k++) {
-            max_magnitude += std::sqrt(out[k].r * out[k].r + out[k].i * out[k].i);
-            float mag = std::sqrt(out[k].r * out[k].r + out[k].i * out[k].i);
-            if (mag > max_magnitude) max_magnitude = mag;
-            //max_magnitude += std::sqrt(out[k].r * out[k].r + out[k].i * out[k].i);
+
+        int totalBins = 256;
+        float barValues[16] = {0};
+        Frame currFrame;
+        for (int i = 0; i < BARS; i++) {
+            int binStart = (int)std::pow(totalBins, (float)i / BARS);
+            int binEnd = (int)std::pow(totalBins, (float)(i + 1) / BARS);
+
+            if (binEnd <= binStart) binEnd = binStart + 1;
+            if (binEnd > totalBins) binEnd = totalBins;
+
+            float sumMag = 0;
+            for (int k = binStart; k < binEnd; k++) {
+                float mag = std::sqrt(out[k].r * out[k].r + out[k].i * out[k].i);
+                sumMag += mag;
+            }
+
+            float avgMag = sumMag / (float)(binEnd - binStart);
+
+            float scaled = 20.0f * log10f(avgMag + 1.0f);
+
+            currFrame.bars[i] = (sumMag / (binEnd - binStart)) * 2.0f;
         }
 
-        if (!shared_buffer.buf_push(max_magnitude)) {
+        std::cout << "--------------------\n";
+        for(int i = 0; i< BARS; i++){
+            std::cout << currFrame.bars[i] << "  "; 
+        }
+        std::cout << "\n";
+
+
+        if (!shared_buffer.buf_push(currFrame)) {
             std::cout<<"Dropped a value\n";
         }
     }

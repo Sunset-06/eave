@@ -204,16 +204,3 @@ int vis_thread(){
     std::cout << GREET << std::endl;
     return 0;
 }
-
-/* 
-Rotation impl.:
-    float s = sin(curr_time*0.1);
-    float c = cos(curr_time*0.1);
-
-    mat4 rotation = mat4(
-        vec4(c,   s,  0.0, 0.0),
-        vec4(-s,  c,  0.0, 0.0),
-        vec4(0.0, 0.0, 1.0, 0.0),
-        vec4(0.0, 0.0, 0.0, 1.0)
-    );
-*/
