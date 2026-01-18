@@ -109,11 +109,7 @@ int aud_thread(){
             currFrame.bars[i] = (sumMag / (binEnd - binStart)) * 2.0f;
         }
 
-        std::cout << "--------------------\n";
-        for(int i = 0; i< BARS; i++){
-            std::cout << currFrame.bars[i] << "  "; 
-        }
-        std::cout << "\n";
+        //std::cout << "PUSHED---"<<currFrame.bars[0]<<" "<< currFrame.bars[1] << "\n";
 
 
         if (!shared_buffer.buf_push(currFrame)) {

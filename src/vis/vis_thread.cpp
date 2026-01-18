@@ -9,22 +9,23 @@ const int SCREEN_HEIGHT = 480;
 bool exit_flag = false;
 
 float r1[] = {
-     1.0f,  0.1f, 0.0f,  // top right
-     1.0f,  0.0f, 0.0f,  // bottom right
-    -1.0f,  0.0f, 0.0f,  // bottom left
-    -1.0f,  0.1f, 0.0f   // top left
+     0.05f,  1.0f, 0.0f,  // top right
+     0.05f,  0.0f, 0.0f,  // bottom right
+    -0.05f,  0.0f, 0.0f,  // bottom left
+    -0.05f,  1.0f, 0.0f   // top left
 };
 unsigned int r1_indices[] = {
     0, 1, 3,
     1, 2, 3
-};  
+};
 
 unsigned int r1_VBO;
 unsigned int r1_VAO;
 unsigned int r1_EBO;
-static float smooth_rms = 0.0f;
+
+float currHeights[16] = {0.0f};
+float smoothHeights[16] = {0.0f};
 const float smoothing_factor = 0.10f;
-//const float up_smoothing_factor = 0.30f;
 
 
     
@@ -169,29 +170,24 @@ int vis_thread(){
         glClear(GL_COLOR_BUFFER_BIT);    
         glUseProgram(shaderProgram);
 
-        float current_rms;
+        Frame nextFrame;
 
-        while (shared_buffer.buf_pop(current_rms)) {
-            //std::cout<<"popped\n";
+        while(shared_buffer.buf_pop(nextFrame)) {
+            for(int i = 0; i < 16; i++) {
+                currHeights[i] = nextFrame.bars[i];
+            }
         }
-        smooth_rms += (current_rms - smooth_rms) * smoothing_factor;
+        //std::cout << "POPPED---"<<currHeights[0]<<" "<< currHeights[1] << "\n";
 
-        if(smooth_rms < current_rms)
-            smooth_rms += 0.50f;
-            //if (smooth_rms > 1.0f) smooth_rms = 0.0f;
-        else {
-            smooth_rms -= 0.05f;
-            if (smooth_rms < 0.0f) smooth_rms = 0.0f;
+        for(int i = 0; i < 16; i++) {
+            smoothHeights[i] += (currHeights[i] - smoothHeights[i]) * smoothing_factor;
         }
-        int rmsLoc = glGetUniformLocation(shaderProgram, "inp_val");
-        glUniform1f(rmsLoc, smooth_rms);
 
-        float timeValue = SDL_GetTicks() / 1000.0f;
-        int timeLoc = glGetUniformLocation(shaderProgram, "curr_time");
-        glUniform1f(timeLoc, timeValue);
+        int heightsLoc = glGetUniformLocation(shaderProgram, "heights");
+        glUniform1fv(heightsLoc, 16, smoothHeights);
 
         glBindVertexArray(r1_VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 16);
         
         SDL_GL_SwapWindow(window);
     }
