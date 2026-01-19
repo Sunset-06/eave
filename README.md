@@ -1,14 +1,45 @@
 # eave
-Let's end up with something shall we?
 
-I am NOT looking forward to OpenGL :broken_heart:
+A simple audio visualizer using OpenGL and PulseAudio.
 
-The first few commits will be slow and experimental while I learn OpenGL
+## Get it to Work
 
-useful links:
+First, compile the binary
+```bash
 
-https://github.com/indrajithi/Audio-Visualizer
+mkdir build
 
-https://github.com/mborgerding/kissfft
+cd build
 
-https://dsp.stackexchange.com/questions/26927/what-is-a-frequency-bin
+cmake .. # generates all build files within the ./build directory
+
+make # compiles
+```
+
+Then to run it:
+
+In the build directory, run
+
+```bash
+./eave 
+```
+
+You need to actually add your monitor to MY_SOURCE in `aud.c`
+
+To find your monitor:
+```bash
+pactl list short sources | grep monitor # will list out all monitors
+```
+
+After this paste the monitor in the MY_SOURCE macro.
+
+## Things left to do
+
+- Make it look good (Not my strong suit)
+- Dynamically select monitors
+- Improve performance (especially around that pesky little buffer)
+
+## Credits
+This Project uses [KissFFT](https://github.com/mborgerding/kissfft) to perform fast fourier transforms on the raw audio data.
+
+Really cool library. Check it out.

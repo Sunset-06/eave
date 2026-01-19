@@ -29,7 +29,7 @@ int aud_thread(){
         nullptr,                        // which server to get from
         "really cool thing im making",  // app name
         PA_STREAM_RECORD,               // recored the playing audio
-        MY_SOURCE,                      // from this device
+        MY_SOURCE,                      // from this monitor
         "Audio Capture",                // what i'm doing
         &spec,                          // pointer to the specs above 
         nullptr,                        // channel layout (stereo/mono etc.) this will use default from thhe source
