@@ -103,10 +103,12 @@ int aud_thread(){
             }
 
             float avgMag = sumMag / (float)(binEnd - binStart);
+            float dB = 20.0f * log10f(avgMag + 1e-6f);
+            float normalized = (dB + 50.0f) / 50.0f;
+            
+            float tilt = std::pow(1.7f, (float)i / (BARS * 0.5f));
 
-            float scaled = 20.0f * log10f(avgMag + 1.0f);
-
-            currFrame.bars[i] = (sumMag / (binEnd - binStart)) * 2.0f;
+            currFrame.bars[i] = std::max(0.0f, normalized * tilt);
         }
 
         //std::cout << "PUSHED---"<<currFrame.bars[0]<<" "<< currFrame.bars[1] << "\n";

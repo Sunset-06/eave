@@ -37,7 +37,7 @@ After this paste the monitor in the MY_SOURCE macro.
 
 - Make it look good (Not my strong suit)
 - Dynamically select monitors
-- Improve performance (especially around that pesky little buffer)
+- Improve performance
 
 ## Credits
 This Project uses [KissFFT](https://github.com/mborgerding/kissfft) to perform fast fourier transforms on the raw audio data.

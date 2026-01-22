@@ -4,6 +4,6 @@
 #include "glad/glad.h"
 #include <SDL2/SDL.h>
 
-#define GREET "Bye Bye"
+#define GREET "\nBye Bye"
 
 #endif 
