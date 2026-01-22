@@ -87,7 +87,7 @@ int aud_thread(){
         // getting only the first 5 bins for bass
 
         int totalBins = 256;
-        float barValues[16] = {0};
+        float barValues[BARS] = {0};
         Frame currFrame;
         for (int i = 0; i < BARS; i++) {
             int binStart = (int)std::pow(totalBins, (float)i / BARS);

@@ -23,14 +23,15 @@ unsigned int r1_VBO;
 unsigned int r1_VAO;
 unsigned int r1_EBO;
 
-float currHeights[16] = {0.0f};
-float smoothHeights[16] = {0.0f};
-const float smoothing_factor = 0.10f;
+float currHeights[BARS] = {0.0f};
+float smoothHeights[BARS] = {0.0f};
+const float rise = 0.07f;
+const float gravity = 0.04f;
 
 
     
 const char *vertexShaderSrc = 
-#include "shaders/vertex.glsl"
+#include "shaders/vertex2.glsl"
 "";
 
 const char *fragShaderSrc = 
@@ -173,21 +174,28 @@ int vis_thread(){
         Frame nextFrame;
 
         while(shared_buffer.buf_pop(nextFrame)) {
-            for(int i = 0; i < 16; i++) {
-                currHeights[i] = nextFrame.bars[i];
+            for(int i = 0; i < BARS; i++) {
+                float target = nextFrame.bars[i];
+                
+                // If rising, do it fast. If falling, do it slow
+                if (target > smoothHeights[i]) {
+                    smoothHeights[i] += (target - smoothHeights[i]) * rise;
+                } else {
+                    smoothHeights[i] -= gravity;
+                }
             }
         }
         //std::cout << "POPPED---"<<currHeights[0]<<" "<< currHeights[1] << "\n";
 
-        for(int i = 0; i < 16; i++) {
-            smoothHeights[i] += (currHeights[i] - smoothHeights[i]) * smoothing_factor;
-        }
 
         int heightsLoc = glGetUniformLocation(shaderProgram, "heights");
-        glUniform1fv(heightsLoc, 16, smoothHeights);
+        glUniform1fv(heightsLoc, BARS, smoothHeights);
+
+        int totalBarsLoc = glGetUniformLocation(shaderProgram, "totalBars");
+        glUniform1i(totalBarsLoc, BARS);
 
         glBindVertexArray(r1_VAO);
-        glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 16);
+        glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, BARS);
         
         SDL_GL_SwapWindow(window);
     }

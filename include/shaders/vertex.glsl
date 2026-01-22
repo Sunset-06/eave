@@ -2,7 +2,7 @@ R"(
 #version 330 core
     layout (location = 0) in vec3 aPos;
     uniform float spacing = 0.3;
-    uniform float heights[16];
+    uniform float heights[32];
 
     void main() {
         float height = heights[gl_InstanceID];
