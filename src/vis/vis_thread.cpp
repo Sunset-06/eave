@@ -25,9 +25,11 @@ unsigned int r1_EBO;
 
 float currHeights[BARS] = {0.0f};
 float smoothHeights[BARS] = {0.0f};
-const float rise = 0.07f;
-const float gravity = 0.04f;
+float velocity[BARS] = {0.0f};
 
+const float accel_up = 0.5f;
+const float accel_down = 0.03f;
+const float friction = 0.5f;
 
     
 const char *vertexShaderSrc = 
@@ -176,17 +178,21 @@ int vis_thread(){
         while(shared_buffer.buf_pop(nextFrame)) {
             for(int i = 0; i < BARS; i++) {
                 float target = nextFrame.bars[i];
-                
-                // If rising, do it fast. If falling, do it slow
-                if (target > smoothHeights[i]) {
-                    smoothHeights[i] += (target - smoothHeights[i]) * rise;
-                } else {
-                    smoothHeights[i] -= gravity;
+                float diff = target - smoothHeights[i];
+
+                if(diff > 0){
+                    velocity[i] += diff * accel_up;
                 }
+                else {
+                    velocity[i] += diff * accel_down;
+                }
+
+                smoothHeights[i] += velocity[i];
+                velocity[i] *= friction;
+
             }
         }
         //std::cout << "POPPED---"<<currHeights[0]<<" "<< currHeights[1] << "\n";
-
 
         int heightsLoc = glGetUniformLocation(shaderProgram, "heights");
         glUniform1fv(heightsLoc, BARS, smoothHeights);

@@ -9,7 +9,7 @@
 #include <complex>
 
 #define BUFFER_SIZE 512
-#define BARS 20
+#define BARS 16
 
 struct Frame {
     float bars[BARS];
