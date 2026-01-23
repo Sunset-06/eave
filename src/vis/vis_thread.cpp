@@ -19,6 +19,10 @@ unsigned int r1_indices[] = {
     1, 2, 3
 };
 
+// float colours[] = {0.81, 0.23, 0.64};
+float colours[] = {0.67, 0.0, 0.0};
+
+
 unsigned int r1_VBO;
 unsigned int r1_VAO;
 unsigned int r1_EBO;
@@ -30,10 +34,11 @@ float velocity[BARS] = {0.0f};
 const float accel_up = 0.5f;
 const float accel_down = 0.03f;
 const float friction = 0.5f;
+const float sensitivity = 0.8f;
 
     
 const char *vertexShaderSrc = 
-#include "shaders/vertex2.glsl"
+#include "shaders/vertex.glsl"
 "";
 
 const char *fragShaderSrc = 
@@ -155,12 +160,6 @@ int vis_thread(){
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);  
 
-    size_t stride = 3 * sizeof(float); 
-
-    // Position attribute (layout location 0): 3 floats, starts at offset 0
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
-    glEnableVertexAttribArray(0);
-
     SDL_Event e;
 
     while (!exit_flag) {
@@ -169,7 +168,7 @@ int vis_thread(){
                 exit_flag = true;
             }
         }
-        glClearColor(0.0f, 0.35f, 0.4f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);    
         glUseProgram(shaderProgram);
 
@@ -177,7 +176,7 @@ int vis_thread(){
 
         while(shared_buffer.buf_pop(nextFrame)) {
             for(int i = 0; i < BARS; i++) {
-                float target = nextFrame.bars[i];
+                float target = nextFrame.bars[i]*sensitivity;
                 float diff = target - smoothHeights[i];
 
                 if(diff > 0){
@@ -196,6 +195,9 @@ int vis_thread(){
 
         int heightsLoc = glGetUniformLocation(shaderProgram, "heights");
         glUniform1fv(heightsLoc, BARS, smoothHeights);
+
+        int colorsLoc = glGetUniformLocation(shaderProgram, "barColours");
+        glUniform3fv(colorsLoc, 1, colours);
 
         int totalBarsLoc = glGetUniformLocation(shaderProgram, "totalBars");
         glUniform1i(totalBarsLoc, BARS);
