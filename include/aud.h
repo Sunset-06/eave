@@ -3,6 +3,7 @@
 
 #include <pulse/simple.h>
 #include <pulse/error.h>
+#include<atomic>
 #include "kissfft/kiss_fft.h"
 
 // My usb port

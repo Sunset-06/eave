@@ -1,6 +1,5 @@
-#include<core.h>
-#include<aud.h>
-#include<atomic>   
+#include"core.h"
+#include"aud.h"
 
 int aud_thread(){
 
