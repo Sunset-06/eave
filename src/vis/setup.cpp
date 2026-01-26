@@ -23,7 +23,13 @@ unsigned int rect_indices[] = {
 };
 
 // float colours[] = {0.81, 0.23, 0.64};
-float colours[] = {0.02, 0.67, 0.10};
+float colours[] = {0.07, 0.82, 0.86};
+
+float bar_gradient[] = {
+    0.01f, 0.73f, 0.59f,
+    0.0f, 0.81f, 0.0f,
+    0.0f, 0.9f, 0.19f
+};
 
 unsigned int r1_VBO;
 unsigned int r1_VAO;

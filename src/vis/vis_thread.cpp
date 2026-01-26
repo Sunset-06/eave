@@ -31,6 +31,15 @@ int vis_thread(){
     // Binding VAOs, VBOs and EBOs
     Bind_GLObjects();
 
+    int timeLoc = glGetUniformLocation(shaderProgram, "time");
+    int gradLoc = glGetUniformLocation(shaderProgram, "bar_gradient");
+    int resLoc = glGetUniformLocation(shaderProgram, "resolution");
+    int heightsLoc = glGetUniformLocation(shaderProgram, "heights");
+    int colorsLoc = glGetUniformLocation(shaderProgram, "barColours");
+    int totalBarsLoc = glGetUniformLocation(shaderProgram, "totalBars");
+
+
+
     SDL_Event e;
 
     while (!exit_flag) {
@@ -39,12 +48,12 @@ int vis_thread(){
                 exit_flag = true;
             }
         }
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);    
         glUseProgram(shaderProgram);
 
         Frame nextFrame;
-
+ 
         while(shared_buffer.buf_pop(nextFrame)) {
             for(int i = 0; i < BARS; i++) {
                 float target = nextFrame.bars[i]*sensitivity;
@@ -63,13 +72,20 @@ int vis_thread(){
             }
         }
 
-        int heightsLoc = glGetUniformLocation(shaderProgram, "heights");
+        float time = SDL_GetTicks() / 1000.0f;
+
+        glUniform1f(timeLoc, time);
+
+        glUniform3fv(gradLoc, 3, bar_gradient);
+
+        int w, h;
+        SDL_GetWindowSize(window, &w, &h);
+        glUniform2f(resLoc, (float)w, (float)h);
+        
         glUniform1fv(heightsLoc, BARS, smoothHeights);
 
-        int colorsLoc = glGetUniformLocation(shaderProgram, "barColours");
         glUniform3fv(colorsLoc, 1, colours);
 
-        int totalBarsLoc = glGetUniformLocation(shaderProgram, "totalBars");
         glUniform1i(totalBarsLoc, BARS);
 
         glBindVertexArray(r1_VAO);

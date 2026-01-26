@@ -19,6 +19,8 @@ const float sensitivity = 0.8f;
 extern float rect[12];
 extern unsigned int rect_indices[6];
 extern float colours[3];
+extern float bar_gradient[9];
+
 
 // bar objects 
 extern unsigned int r1_VBO;
