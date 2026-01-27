@@ -18,9 +18,11 @@ const float sensitivity = 0.8f;
 // Bar vertices, indexes and colours
 extern float rect[12];
 extern unsigned int rect_indices[6];
-extern float colours[3];
-extern float bar_gradient[9];
-
+//extern float colours[3];
+extern float palettes[][9];
+// palettes
+extern int currPalette;
+extern int totalPalettes;
 
 // bar objects 
 extern unsigned int r1_VBO;

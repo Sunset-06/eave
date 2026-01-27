@@ -12,15 +12,15 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     
     // creates vertical, horizontal and diagonal waves that interfere with each other
-    float brightness = sin(uv.x * 10.0 + time * 0.2) +
+    float brightness = sin(uv.x * 3.0 + time * 0.2) +
                        sin(uv.y * 7.0 - time * 0.3) +
-                       sin((uv.x + uv.y) * 3.0 + time * 0.3);
+                       sin((uv.x + uv.y) * 3.0 + time * 0.5);
 
     // Normalize from -3.0 - 3.0 to 0.0 to 1.0
     brightness = (brightness + 3.0) / 6.0;
 
     float accentMask = smoothstep(0.1, 0.6, brightness);
-    float midToneMask = smoothstep(0.4, 0.9, brightness);
+    float midToneMask = smoothstep(0.3, 0.9, brightness);
 
     // layering colors
     vec3 finalCol = bar_gradient[0];

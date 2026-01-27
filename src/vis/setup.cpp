@@ -22,14 +22,22 @@ unsigned int rect_indices[] = {
     1, 2, 3
 };
 
-// float colours[] = {0.81, 0.23, 0.64};
-float colours[] = {0.07, 0.82, 0.86};
+float palettes[][9] = {
+    { // Palette 0: Turquoise to Deep Green
+     0.01f, 0.73f, 0.59f, // Turquoise
+     0.0f, 0.81f, 0.0f,   // Green
+     0.1f, 0.674f, 0.18f  // Slightly different green
+    },
 
-float bar_gradient[] = {
-    0.01f, 0.73f, 0.59f,
-    0.0f, 0.81f, 0.0f,
-    0.0f, 0.9f, 0.19f
+    {
+    1.0f, 0.96f, 0.0f,   // Yellow
+    1.0f, 0.66f, 0.07f,  // Orange
+    0.67f, 0.09f, 0.16f  // Red
+    }
 };
+
+int currPalette = 0;
+int totalPalettes = 2;
 
 unsigned int r1_VBO;
 unsigned int r1_VAO;

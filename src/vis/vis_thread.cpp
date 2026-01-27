@@ -47,6 +47,16 @@ int vis_thread(){
             if (e.type == SDL_QUIT) {
                 exit_flag = true;
             }
+            else if (e.type == SDL_KEYDOWN) {
+                switch(e.key.keysym.sym){
+                    case SDLK_ESCAPE:
+                        exit_flag = true;
+                        break;
+                    case SDLK_p:
+                        currPalette = (currPalette + 1) % totalPalettes;
+                        std::cout << "Swapped to palette: " << currPalette << std::endl;
+                }
+            }
         }
         glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);    
@@ -76,7 +86,7 @@ int vis_thread(){
 
         glUniform1f(timeLoc, time);
 
-        glUniform3fv(gradLoc, 3, bar_gradient);
+        glUniform3fv(gradLoc, 3, palettes[currPalette]);
 
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
@@ -84,7 +94,7 @@ int vis_thread(){
         
         glUniform1fv(heightsLoc, BARS, smoothHeights);
 
-        glUniform3fv(colorsLoc, 1, colours);
+        //glUniform3fv(colorsLoc, 1, colours);
 
         glUniform1i(totalBarsLoc, BARS);
 
