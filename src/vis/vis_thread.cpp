@@ -37,6 +37,7 @@ int vis_thread(){
     int heightsLoc = glGetUniformLocation(shaderProgram, "heights");
     int colorsLoc = glGetUniformLocation(shaderProgram, "barColours");
     int totalBarsLoc = glGetUniformLocation(shaderProgram, "totalBars");
+    //int seedLoc = glGetUniformLocation(shaderProgram, "seed");
 
 
 
@@ -97,6 +98,8 @@ int vis_thread(){
         //glUniform3fv(colorsLoc, 1, colours);
 
         glUniform1i(totalBarsLoc, BARS);
+
+        //glUniform1f(seedLoc, randomSeed);
 
         glBindVertexArray(r1_VAO);
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, BARS);

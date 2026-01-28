@@ -23,7 +23,7 @@ unsigned int rect_indices[] = {
 };
 
 float palettes[][9] = {
-    { // Palette 0: Turquoise to Deep Green
+    {
      0.01f, 0.73f, 0.59f, // Turquoise
      0.0f, 0.81f, 0.0f,   // Green
      0.1f, 0.674f, 0.18f  // Slightly different green
@@ -33,11 +33,24 @@ float palettes[][9] = {
     1.0f, 0.96f, 0.0f,   // Yellow
     1.0f, 0.66f, 0.07f,  // Orange
     0.67f, 0.09f, 0.16f  // Red
+    },
+
+    {
+    0.67f, 0.0f, 0.78f,  // Violet
+    0.69f, 0.0f, 0.78f,  // Orange
+    0.38f, 0.0f, 0.6f,   // Red
+    },
+
+    {
+    0.02f, 0.01f, 0.10f,  // Red
+    0.83f, 0.0f, 0.47f,  // Orange
+    0.0f, 0.95f, 0.95f,   // Cyan
     }
 };
 
 int currPalette = 0;
-int totalPalettes = 2;
+int totalPalettes = 4;
+//float randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
 
 unsigned int r1_VBO;
 unsigned int r1_VAO;

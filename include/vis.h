@@ -23,6 +23,7 @@ extern float palettes[][9];
 // palettes
 extern int currPalette;
 extern int totalPalettes;
+//extern float randomSeed;
 
 // bar objects 
 extern unsigned int r1_VBO;
