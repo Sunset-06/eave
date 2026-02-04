@@ -1,6 +1,30 @@
 #include"core.h"
 #include"aud.h"
 
+std::string getDefaultMonitor() {
+    char buffer[128];
+    std::string result = "";
+    // really hacky way to get the default sink lol
+    FILE* pipe = popen("pactl info | grep 'Default Sink:' | awk '{print $3 \".monitor\"}'", "r");
+    
+    if (!pipe) {
+        std::cerr << "Failed to run pactl\n";
+        return "";
+    }
+    
+    while (fgets(buffer, sizeof(buffer), pipe) != NULL) {
+        result += buffer;
+    }
+    pclose(pipe);
+
+    // Clean up trailing
+    while(!result.empty() && (result.back() == '\n' || result.back() == '\r')) {
+        result.pop_back();
+    }
+    
+    return result;
+}
+
 int aud_thread(){
 
     pa_sample_spec spec;
@@ -9,7 +33,7 @@ int aud_thread(){
     spec.channels = 2;
 
 
-
+    std::string monitor = getDefaultMonitor();
     // Setting things up for lower latency
     // Here, -1 is default, since I only really want to change the fragsize
     pa_buffer_attr buffer_attr;
@@ -28,7 +52,7 @@ int aud_thread(){
         nullptr,                        // which server to get from
         "really cool thing im making",  // app name
         PA_STREAM_RECORD,               // recored the playing audio
-        MY_SOURCE,                      // from this monitor
+        monitor.c_str(),                      // from this monitor
         "Audio Capture",                // what i'm doing
         &spec,                          // pointer to the specs above 
         nullptr,                        // channel layout (stereo/mono etc.) this will use default from thhe source
