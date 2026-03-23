@@ -28,19 +28,25 @@ float palettes[][9] = {
 
     {
     0.67f, 0.0f, 0.78f,  // Violet
-    0.69f, 0.0f, 0.78f,  // Orange
-    0.38f, 0.0f, 0.6f,   // Red
+    0.69f, 0.0f, 0.78f,  // Purple
+    0.38f, 0.0f, 0.6f,   // Light Purple
     },
 
     {
-    0.02f, 0.01f, 0.10f,  // Red
-    0.83f, 0.0f, 0.47f,  // Orange
-    0.0f, 0.95f, 0.95f,   // Cyan
-    }
+    0.20f, 0.00f, 0.10f,  // Maroon
+    0.83f, 0.00f, 0.47f,  // Pink
+    0.58f, 0.39f, 0.76f,  // Lavender
+    },
+
+    {
+    0.05f, 0.00f, 0.12f,  // Indigo
+    0.10f, 0.15f, 0.65f,  // Cobalt
+    0.40f, 0.75f, 1.00f   // Sky Blue
+}
 };
 
 int currPalette = 0;
-int totalPalettes = 4;
+int totalPalettes = 5;
 //float randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
 
 unsigned int r1_VBO;

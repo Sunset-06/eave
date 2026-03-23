@@ -14,7 +14,7 @@ const char *waveVertexShaderSrc =
 "";
 
 const char *defFragShaderSrc =
-#include "shaders/fragment.glsl"
+#include "shaders/newfrag.glsl"
 "";
 
 int vis_thread(){    
