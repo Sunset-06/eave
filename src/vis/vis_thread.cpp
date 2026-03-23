@@ -73,7 +73,7 @@ int vis_thread(){
                         break;
                     case SDLK_m:
                         current_mode = (current_mode == MODE_BARS) ? MODE_WAVE : MODE_BARS;
-                        std::cout << "Switched Modes\n"<< std::endl;
+                        std::cout << "Switched Mode to: " << current_mode << std::endl;
                         break;
                 }
             }
@@ -127,7 +127,7 @@ int vis_thread(){
 
                 glBindVertexArray(r1_VAO);
                 glLineWidth(2.0f);
-                glDrawArrays(GL_LINE_STRIP, 0, BARS); 
+                glDrawArraysInstanced(GL_LINE_STRIP, 0, BARS, 2 );
                 break;
         }
         
