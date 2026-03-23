@@ -35,32 +35,25 @@ int vis_thread(){
         SDL_Quit(); 
         return 1;
     }
+    
+    unsigned int barProgram = Create_Shader_Program(barsVertexShaderSrc, defFragShaderSrc);
+    unsigned int waveProgram = Create_Shader_Program(waveVertexShaderSrc, defFragShaderSrc);
 
-    // Selecting Mode
-    const char* selectedVertexSrc;
-    const char* selectedFragSrc = defFragShaderSrc;
+    // Cache the uniform locations for Bars
+    int bTimeLoc    = glGetUniformLocation(barProgram, "time");
+    int bGradLoc    = glGetUniformLocation(barProgram, "bar_gradient");
+    int bResLoc     = glGetUniformLocation(barProgram, "resolution");
+    int bHeightsLoc = glGetUniformLocation(barProgram, "heights");
+    int bTotalBarsLoc = glGetUniformLocation(barProgram, "totalBars");
 
-    if (current_mode == MODE_BARS) {
-        selectedVertexSrc = barsVertexShaderSrc;
-    } else {
-        selectedVertexSrc = waveVertexShaderSrc;
-    }
+    // Cache the uniform locations for Wave
+    int wTimeLoc         = glGetUniformLocation(waveProgram, "time");
+    int wGradLoc         = glGetUniformLocation(waveProgram, "bar_gradient");
+    int wResLoc          = glGetUniformLocation(waveProgram, "resolution");
+    int wHeightsLoc      = glGetUniformLocation(waveProgram, "heights");
+    int wTotalPointsLoc  = glGetUniformLocation(waveProgram, "totalPoints");
 
-    // compiling shaders and creating shader program
-    unsigned int shaderProgram = Create_Shader_Program(selectedVertexSrc, selectedFragSrc);
-
-    // Binding VAOs, VBOs and EBOs
     Bind_GLObjects();
-
-    int timeLoc = glGetUniformLocation(shaderProgram, "time");
-    int gradLoc = glGetUniformLocation(shaderProgram, "bar_gradient");
-    int resLoc = glGetUniformLocation(shaderProgram, "resolution");
-    int heightsLoc = glGetUniformLocation(shaderProgram, "heights");
-    int colorsLoc = glGetUniformLocation(shaderProgram, "barColours");
-    int totalBarsLoc = glGetUniformLocation(shaderProgram, "totalBars");
-    //int seedLoc = glGetUniformLocation(shaderProgram, "seed");
-
-
 
     SDL_Event e;
 
@@ -77,15 +70,18 @@ int vis_thread(){
                     case SDLK_p:
                         currPalette = (currPalette + 1) % totalPalettes;
                         std::cout << "Swapped to palette: " << currPalette << std::endl;
+                        break;
+                    case SDLK_m:
+                        current_mode = (current_mode == MODE_BARS) ? MODE_WAVE : MODE_BARS;
+                        std::cout << "Switched Modes\n"<< std::endl;
+                        break;
                 }
             }
         }
         glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);    
-        glUseProgram(shaderProgram);
-
         Frame nextFrame;
- 
+
         while(shared_buffer.buf_pop(nextFrame)) {
             for(int i = 0; i < BARS; i++) {
                 float target = nextFrame.bars[i]*sensitivity;
@@ -105,25 +101,35 @@ int vis_thread(){
         }
 
         float time = SDL_GetTicks() / 1000.0f;
-
-        glUniform1f(timeLoc, time);
-
-        glUniform3fv(gradLoc, 3, palettes[currPalette]);
-
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
-        glUniform2f(resLoc, (float)w, (float)h);
-        
-        glUniform1fv(heightsLoc, BARS, smoothHeights);
 
-        //glUniform3fv(colorsLoc, 1, colours);
+        switch (current_mode) {
+            case MODE_BARS:
+                glUseProgram(barProgram);
+                glUniform1f(bTimeLoc, time);
+                glUniform3fv(bGradLoc, 3, palettes[currPalette]);
+                glUniform2f(bResLoc, (float)w, (float)h);
+                glUniform1fv(bHeightsLoc, BARS, smoothHeights);
+                glUniform1i(bTotalBarsLoc, BARS);
 
-        glUniform1i(totalBarsLoc, BARS);
+                glBindVertexArray(r1_VAO);
+                glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, BARS);
+                break;
 
-        //glUniform1f(seedLoc, randomSeed);
+            case MODE_WAVE:
+                glUseProgram(waveProgram);
+                glUniform1f(wTimeLoc, time);
+                glUniform3fv(wGradLoc, 3, palettes[currPalette]);
+                glUniform2f(wResLoc, (float)w, (float)h);
+                glUniform1fv(wHeightsLoc, BARS, smoothHeights);
+                glUniform1i(wTotalPointsLoc, BARS);
 
-        glBindVertexArray(r1_VAO);
-        glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, BARS);
+                glBindVertexArray(r1_VAO);
+                glLineWidth(2.0f);
+                glDrawArrays(GL_LINE_STRIP, 0, BARS); 
+                break;
+        }
         
         SDL_GL_SwapWindow(window);
     }
