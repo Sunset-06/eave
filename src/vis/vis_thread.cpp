@@ -127,7 +127,7 @@ int vis_thread(){
 
                 glBindVertexArray(r1_VAO);
                 glLineWidth(2.0f);
-                glDrawArraysInstanced(GL_LINE_STRIP, 0, BARS, 2 );
+                glDrawArrays(GL_TRIANGLE_STRIP, 0, BARS*2);
                 break;
         }
         
