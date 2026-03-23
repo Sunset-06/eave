@@ -6,7 +6,7 @@ uniform float heights[64];
 uniform int totalBars;
 
 void main() {
-    float height = max(0.02,heights[gl_InstanceID]);
+    float height = max(0.02, heights[gl_InstanceID]);
     float availableWidth = 1.9; 
     float barWidth = availableWidth / float(totalBars);
     float startX = -(availableWidth / 2.0);

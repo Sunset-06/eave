@@ -5,6 +5,17 @@
 
 bool exit_flag = false;
 
+const char *barsVertexShaderSrc = 
+#include "shaders/vertexBars.glsl"
+"";
+
+const char *waveVertexShaderSrc = 
+#include "shaders/vertexWave.glsl"
+"";
+
+const char *defFragShaderSrc =
+#include "shaders/fragment.glsl"
+"";
 
 int vis_thread(){    
     // Initializing SDL - Only Video for now, we'll need audio later
@@ -25,8 +36,18 @@ int vis_thread(){
         return 1;
     }
 
+    // Selecting Mode
+    const char* selectedVertexSrc;
+    const char* selectedFragSrc = defFragShaderSrc;
+
+    if (current_mode == MODE_BARS) {
+        selectedVertexSrc = barsVertexShaderSrc;
+    } else {
+        selectedVertexSrc = waveVertexShaderSrc;
+    }
+
     // compiling shaders and creating shader program
-    unsigned int shaderProgram = Create_Shader_Program();
+    unsigned int shaderProgram = Create_Shader_Program(selectedVertexSrc, selectedFragSrc);
 
     // Binding VAOs, VBOs and EBOs
     Bind_GLObjects();

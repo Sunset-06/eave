@@ -8,8 +8,12 @@
 #include <atomic>
 #include <complex>
 
+#define GREET "\nBye Bye\n"
+
 #define BUFFER_SIZE 512
 #define BARS 20
+
+enum Mode { MODE_BARS, MODE_WAVE };
 
 struct Frame {
     float bars[BARS];
@@ -52,6 +56,7 @@ struct RingBuffer {
 
 extern RingBuffer shared_buffer;
 extern bool exit_flag;
+extern Mode current_mode;
 
 extern int vis_thread();
 extern int aud_thread();

@@ -4,8 +4,6 @@
 #include "glad/glad.h"
 #include <SDL2/SDL.h>
 
-#define GREET "\nBye Bye"
-
 const int SCREEN_WIDTH = 720;
 const int SCREEN_HEIGHT = 480;
 
@@ -38,8 +36,12 @@ extern float velocity[BARS];
 extern void setup();
 extern SDL_HitTestResult DraggableCallback(SDL_Window* win, const SDL_Point* area, void* data);
 extern SDL_Window* Start_Window(SDL_Window* window);
-extern unsigned int Create_Shader_Program();
+extern unsigned int Create_Shader_Program(const char* vertexShaderSrc , const char *fragShaderSrc);
 extern void Bind_GLObjects();
 
+// Shader imports
+extern const char *barsVertexShaderSrc;
+extern const char *waveVertexShaderSrc;
+extern const char *defFragShaderSrc;
 
 #endif 

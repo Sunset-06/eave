@@ -1,15 +1,6 @@
 #include "core.h"
 #include "vis.h"
 
-// Shader imports
-const char *vertexShaderSrc = 
-#include "shaders/vertex.glsl"
-"";
-
-const char *fragShaderSrc = 
-#include "shaders/fragment.glsl"
-"";
-
 float rect[] = {
      0.05f,  1.0f, 0.0f,  // top right
      0.05f,  0.0f, 0.0f,  // bottom right
@@ -124,7 +115,7 @@ SDL_Window* Start_Window(SDL_Window* window){
 }
 
 // Compiles and creates a shader program
-unsigned int Create_Shader_Program(){
+unsigned int Create_Shader_Program(const char* vertexShaderSrc , const char *fragShaderSrc){
     // Vertex Shader
     unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
