@@ -35,6 +35,12 @@ int vis_thread(){
         SDL_Quit(); 
         return 1;
     }
+
+    /* // starting the metadata script
+    FILE* pipe = popen("python3 listen.py", "r");
+    if (!pipe) {
+        std::cerr << "Failed to start Python script\n";
+    } */
     
     unsigned int barProgram = Create_Shader_Program(barsVertexShaderSrc, defFragShaderSrc);
     unsigned int waveProgram = Create_Shader_Program(waveVertexShaderSrc, defFragShaderSrc);

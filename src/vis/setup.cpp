@@ -27,9 +27,9 @@ float palettes[][9] = {
     },
 
     {
-    0.67f, 0.0f, 0.78f,  // Violet
-    0.69f, 0.0f, 0.78f,  // Purple
-    0.38f, 0.0f, 0.6f,   // Light Purple
+    0.67f, 0.00f, 0.78f,  // Violet
+    0.60f, 0.01f, 0.67f,  // Purple
+    0.38f, 0.00f, 0.6f,   // Light Purple
     },
 
     {
