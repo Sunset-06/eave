@@ -1,6 +1,7 @@
 #include "core.h"
 #include "vis.h"
 
+
 float rect[] = {
      0.05f,  1.0f, 0.0f,  // top right
      0.05f,  0.0f, 0.0f,  // bottom right
@@ -12,6 +13,14 @@ unsigned int rect_indices[] = {
     0, 1, 3,
     1, 2, 3
 };
+
+float coverVertices[] = {
+    -0.95f, -0.50f,  0.0f, 1.0f,
+    -0.95f, -0.95f,  0.0f, 0.0f,
+    -0.50f, -0.95f,  1.0f, 0.0f,
+    -0.50f, -0.50f,  1.0f, 1.0f,
+};
+unsigned int coverIndices[] = { 0, 1, 2, 0, 2, 3 };
 
 float palettes[][9] = {
     {
@@ -52,6 +61,12 @@ int totalPalettes = 5;
 unsigned int r1_VBO;
 unsigned int r1_VAO;
 unsigned int r1_EBO;
+
+unsigned int coverVAO;
+unsigned int coverVBO;
+unsigned int coverEBO;
+GLuint coverTex = 0;
+std::string lastPath = "";
 
 float currHeights[BARS] = {0.0f};
 float smoothHeights[BARS] = {0.0f};
@@ -176,4 +191,54 @@ void Bind_GLObjects(){
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);  
+}
+
+/// for the album cover
+GLuint loadTexture(const char* path) {
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true); 
+    unsigned char *data = stbi_load(path, &width, &height, &nrChannels, 0);
+    
+    if (data) {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    } else {
+        std::cout << "Failed to load texture at: " << path << std::endl;
+        return 0;
+    }
+    return textureID;
+}
+
+void Bind_CoverObjects() {
+    glGenVertexArrays(1, &coverVAO);
+    glGenBuffers(1, &coverVBO);
+    glGenBuffers(1, &coverEBO);
+
+    glBindVertexArray(coverVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, coverVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(coverVertices), coverVertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, coverEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(coverIndices), coverIndices, GL_STATIC_DRAW);
+
+    // Position (Location 0)
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    
+    // TexCoords (Location 1)
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 }

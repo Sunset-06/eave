@@ -1,21 +1,29 @@
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 #include "core.h"
 #include "vis.h"
 
 bool exit_flag = false;
 
-const char *barsVertexShaderSrc = 
+const char *barsVertexShaderSrc =
 #include "shaders/vertexBars.glsl"
 "";
 
-const char *waveVertexShaderSrc = 
+const char *waveVertexShaderSrc =
 #include "shaders/vertexWave.glsl"
 "";
 
 const char *defFragShaderSrc =
 #include "shaders/newfrag.glsl"
 "";
+
+const char *coverVertexShaderSrc =
+#include "shaders/covervrtx.glsl"
+"";
+
+const char *coverFragShaderSrc =
+#include "shaders/coverfrag.glsl"
+"";
+
 
 int vis_thread(){    
     // Initializing SDL - Only Video for now, we'll need audio later
@@ -36,20 +44,25 @@ int vis_thread(){
         return 1;
     }
 
-    /* // starting the metadata script
-    FILE* pipe = popen("python3 listen.py", "r");
+    // starting the metadata script
+    FILE* pipe = popen("python3 ../listen.py", "r");
     if (!pipe) {
         std::cerr << "Failed to start Python script\n";
-    } */
+    }
+
+    int fd = fileno(pipe);
+    int flags = fcntl(fd, F_GETFL, 0);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
     
     unsigned int barProgram = Create_Shader_Program(barsVertexShaderSrc, defFragShaderSrc);
     unsigned int waveProgram = Create_Shader_Program(waveVertexShaderSrc, defFragShaderSrc);
+    unsigned int coverProgram = Create_Shader_Program(coverVertexShaderSrc, coverFragShaderSrc);
 
     // Cache the uniform locations for Bars
-    int bTimeLoc    = glGetUniformLocation(barProgram, "time");
-    int bGradLoc    = glGetUniformLocation(barProgram, "bar_gradient");
-    int bResLoc     = glGetUniformLocation(barProgram, "resolution");
-    int bHeightsLoc = glGetUniformLocation(barProgram, "heights");
+    int bTimeLoc      = glGetUniformLocation(barProgram, "time");
+    int bGradLoc      = glGetUniformLocation(barProgram, "bar_gradient");
+    int bResLoc       = glGetUniformLocation(barProgram, "resolution");
+    int bHeightsLoc   = glGetUniformLocation(barProgram, "heights");
     int bTotalBarsLoc = glGetUniformLocation(barProgram, "totalBars");
 
     // Cache the uniform locations for Wave
@@ -59,7 +72,11 @@ int vis_thread(){
     int wHeightsLoc      = glGetUniformLocation(waveProgram, "heights");
     int wTotalPointsLoc  = glGetUniformLocation(waveProgram, "totalPoints");
 
+    //Cache for album art
+    int coverLoc = glGetUniformLocation(coverProgram, "resolution");
+
     Bind_GLObjects();
+    Bind_CoverObjects();
 
     SDL_Event e;
 
@@ -84,6 +101,25 @@ int vis_thread(){
                 }
             }
         }
+
+        // check for metadata change
+        char buffer[512];
+        while(fgets(buffer, sizeof(buffer), pipe) != NULL) {
+            std::string line(buffer);
+            size_t lastPipe = line.find_last_of('|');
+            if (lastPipe != std::string::npos) {
+                std::string path = line.substr(lastPipe + 2); // skip "| "
+                path.erase(path.find_last_not_of(" \n\r\t") + 1); // trim whitespace
+
+                if (path != lastPath && !path.empty()) {
+                    if (coverTex != 0) glDeleteTextures(1, &coverTex);
+                    coverTex = loadTexture(path.c_str());
+                    lastPath = path;
+                    std::cout << "Loaded new art: " << path << std::endl;
+                }
+            }
+        }
+
         glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);    
         Frame nextFrame;
@@ -137,12 +173,22 @@ int vis_thread(){
                 break;
         }
         
+        if (coverTex != 0) {
+            glUseProgram(coverProgram);
+            glUniform2f(coverLoc, (float)w, (float)h);
+            
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, coverTex);
+            
+            glBindVertexArray(coverVAO);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        }
+
         SDL_GL_SwapWindow(window);
     }
-
+    pclose(pipe);
     SDL_DestroyWindow(window);
     SDL_Quit();
-    //stbi_image_free(data);
 
 
     std::cout << GREET << std::endl;
