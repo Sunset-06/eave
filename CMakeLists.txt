@@ -15,10 +15,12 @@ pkg_check_modules(PULSE REQUIRED libpulse-simple)
 
 file(GLOB_RECURSE VIS_SOURCES "src/vis/*.cpp")
 file(GLOB_RECURSE AUD_SOURCES "src/aud/*.cpp")
+file(GLOB_RECURSE INF_SOURCES "src/inf/*.cpp")
 
 set(SOURCE_FILES
     ${VIS_SOURCES}
     ${AUD_SOURCES}
+    ${INF_SOURCES}
     src/vis/glad.c
     src/aud/kiss_fft.c
     src/main.cpp
@@ -35,7 +37,10 @@ target_link_libraries(eave PRIVATE
     SDL2::SDL2
     OpenGL::GL
     ${PULSE_LIBRARIES}
+)
 
+target_compile_definitions(eave PRIVATE 
+    LISTENER_SCRIPT=\"${CMAKE_CURRENT_SOURCE_DIR}/src/inf/listener.py\"
 )
 
 install(TARGETS eave DESTINATION build)

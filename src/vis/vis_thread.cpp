@@ -1,8 +1,12 @@
-#define STB_IMAGE_IMPLEMENTATION
 #include "core.h"
 #include "vis.h"
 
 bool exit_flag = false;
+
+std::string last_song = "";
+bool metadataFlag = false;
+unsigned char* coverPixels = nullptr;
+int imgW, imgH;
 
 const char *barsVertexShaderSrc =
 #include "shaders/vertexBars.glsl"
@@ -25,8 +29,7 @@ const char *coverFragShaderSrc =
 "";
 
 
-int vis_thread(){    
-    // Initializing SDL - Only Video for now, we'll need audio later
+int vis_thread(){
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
         return 1;
@@ -44,16 +47,6 @@ int vis_thread(){
         return 1;
     }
 
-    // starting the metadata script
-    FILE* pipe = popen("python3 ../listen.py", "r");
-    if (!pipe) {
-        std::cerr << "Failed to start Python script\n";
-    }
-
-    int fd = fileno(pipe);
-    int flags = fcntl(fd, F_GETFL, 0);
-    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-    
     unsigned int barProgram = Create_Shader_Program(barsVertexShaderSrc, defFragShaderSrc);
     unsigned int waveProgram = Create_Shader_Program(waveVertexShaderSrc, defFragShaderSrc);
     unsigned int coverProgram = Create_Shader_Program(coverVertexShaderSrc, coverFragShaderSrc);
@@ -102,22 +95,35 @@ int vis_thread(){
             }
         }
 
-        // check for metadata change
-        char buffer[512];
-        while(fgets(buffer, sizeof(buffer), pipe) != NULL) {
-            std::string line(buffer);
-            size_t lastPipe = line.find_last_of('|');
-            if (lastPipe != std::string::npos) {
-                std::string path = line.substr(lastPipe + 2); // skip "| "
-                path.erase(path.find_last_not_of(" \n\r\t") + 1); // trim whitespace
+        std::lock_guard<std::mutex> lock(curr_metadata.mtx);
+        if (curr_metadata.flag) {
+            coverPixels = curr_metadata.pixel_buffer;
+            imgW = curr_metadata.w;
+            imgH = curr_metadata.h;
 
-                if (path != lastPath && !path.empty()) {
-                    if (coverTex != 0) glDeleteTextures(1, &coverTex);
-                    coverTex = loadTexture(path.c_str());
-                    lastPath = path;
-                    std::cout << "Loaded new art: " << path << std::endl;
-                }
-            }
+            // reset
+            curr_metadata.pixel_buffer = nullptr; 
+            curr_metadata.flag = false;
+            metadataFlag = true;
+        }
+
+        if (metadataFlag && coverPixels) {
+            if (coverTex != 0) glDeleteTextures(1, &coverTex);
+
+            glGenTextures(1, &coverTex);
+            glBindTexture(GL_TEXTURE_2D, coverTex);
+            
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgW, imgH, 0, GL_RGBA, GL_UNSIGNED_BYTE, coverPixels);
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            stbi_image_free(coverPixels);
+            coverPixels = nullptr; 
+            metadataFlag = false;
         }
 
         glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
@@ -186,7 +192,6 @@ int vis_thread(){
 
         SDL_GL_SwapWindow(window);
     }
-    pclose(pipe);
     SDL_DestroyWindow(window);
     SDL_Quit();
 

@@ -7,6 +7,8 @@
 #include <cmath>
 #include <atomic>
 #include <complex>
+#include <thread>
+#include <mutex>
 
 #define GREET "\nBye Bye\n"
 
@@ -54,11 +56,25 @@ struct RingBuffer {
     }
 };
 
+struct Metadata {
+    std::string title = "Unknown";
+    std::string artist = "Unknown";
+    std::string album = "Unknown";
+    std::string path = "";
+    std::mutex mtx;
+    int w, h;
+    unsigned char* pixel_buffer = nullptr;
+    bool flag = false;
+};
+
+extern Metadata curr_metadata;
+
 extern RingBuffer shared_buffer;
 extern bool exit_flag;
 extern Mode current_mode;
 
 extern int vis_thread();
 extern int aud_thread();
+extern int inf_thread();
 
 #endif

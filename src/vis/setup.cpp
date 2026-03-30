@@ -14,11 +14,11 @@ unsigned int rect_indices[] = {
     1, 2, 3
 };
 
-float coverVertices[] = {
-    -0.95f, -0.50f,  0.0f, 1.0f,
-    -0.95f, -0.95f,  0.0f, 0.0f,
-    -0.50f, -0.95f,  1.0f, 0.0f,
-    -0.50f, -0.50f,  1.0f, 1.0f,
+float coverVertices[] = { // the + 0.2f is hacky but idc TODO change this
+    -0.95f, -0.50f + 0.2f,  0.0f, 0.0f,
+    -0.95f, -0.95f,  0.0f, 1.0f,
+    -0.50f, -0.95f,  1.0f, 1.0f,
+    -0.50f, -0.50f + 0.2f,  1.0f, 0.0f,
 };
 unsigned int coverIndices[] = { 0, 1, 2, 0, 2, 3 };
 
@@ -199,7 +199,7 @@ GLuint loadTexture(const char* path) {
     glGenTextures(1, &textureID);
     
     int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true); 
+    // stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load(path, &width, &height, &nrChannels, 0);
     
     if (data) {
