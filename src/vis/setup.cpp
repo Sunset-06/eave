@@ -55,7 +55,7 @@ float palettes[][9] = {
 };
 
 int currPalette = 0;
-int totalPalettes = 5;
+int totalPalettes = 6;
 //float randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
 
 unsigned int r1_VBO;

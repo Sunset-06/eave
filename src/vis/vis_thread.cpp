@@ -57,6 +57,8 @@ int vis_thread(){
     int bResLoc       = glGetUniformLocation(barProgram, "resolution");
     int bHeightsLoc   = glGetUniformLocation(barProgram, "heights");
     int bTotalBarsLoc = glGetUniformLocation(barProgram, "totalBars");
+    int bUseTexLoc  = glGetUniformLocation(barProgram, "useTexture");
+    int bCoverTexLoc = glGetUniformLocation(barProgram, "coverArt");
 
     // Cache the uniform locations for Wave
     int wTimeLoc         = glGetUniformLocation(waveProgram, "time");
@@ -64,6 +66,8 @@ int vis_thread(){
     int wResLoc          = glGetUniformLocation(waveProgram, "resolution");
     int wHeightsLoc      = glGetUniformLocation(waveProgram, "heights");
     int wTotalPointsLoc  = glGetUniformLocation(waveProgram, "totalPoints");
+    int wUseTexLoc  = glGetUniformLocation(waveProgram, "useTexture");
+    int wCoverTexLoc = glGetUniformLocation(waveProgram, "coverArt");
 
     //Cache for album art
     int coverLoc = glGetUniformLocation(coverProgram, "resolution");
@@ -151,12 +155,22 @@ int vis_thread(){
         float time = SDL_GetTicks() / 1000.0f;
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
-
+        bool textureMode = (currPalette == 5);
         switch (current_mode) {
             case MODE_BARS:
                 glUseProgram(barProgram);
+                glUniform1i(bUseTexLoc, textureMode);
+
+                // if in texture mode (palette no. 5)
+                if (textureMode) {
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, coverTex);
+                    glUniform1i(bCoverTexLoc, 0);
+                }
+                else{
+                    glUniform3fv(bGradLoc, 3, palettes[currPalette]);
+                }
                 glUniform1f(bTimeLoc, time);
-                glUniform3fv(bGradLoc, 3, palettes[currPalette]);
                 glUniform2f(bResLoc, (float)w, (float)h);
                 glUniform1fv(bHeightsLoc, BARS, smoothHeights);
                 glUniform1i(bTotalBarsLoc, BARS);
@@ -167,6 +181,15 @@ int vis_thread(){
 
             case MODE_WAVE:
                 glUseProgram(waveProgram);
+                glUniform1i(bUseTexLoc, textureMode);
+                if (textureMode) {
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, coverTex);
+                    glUniform1i(wCoverTexLoc, 0);
+                } else {
+                    glUniform3fv(wGradLoc, 3, palettes[currPalette]);
+                }
+                
                 glUniform1f(wTimeLoc, time);
                 glUniform3fv(wGradLoc, 3, palettes[currPalette]);
                 glUniform2f(wResLoc, (float)w, (float)h);
@@ -181,6 +204,8 @@ int vis_thread(){
         
         if (coverTex != 0) {
             glUseProgram(coverProgram);
+            glUniform1i(bUseTexLoc, textureMode);
+
             glUniform2f(coverLoc, (float)w, (float)h);
             
             glActiveTexture(GL_TEXTURE0);

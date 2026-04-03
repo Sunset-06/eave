@@ -6,6 +6,10 @@ uniform vec3 bar_gradient[3];
 uniform vec2 resolution;
 uniform float time;
 
+// THIS IS FOR THE COVER PALETTE
+uniform sampler2D coverArt;
+uniform bool useTexture;
+
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
@@ -31,11 +35,19 @@ void main()
 
     // Blending
     vec3 finalCol;
-    if (brightness < 0.5) {
-        finalCol = mix(bar_gradient[0], bar_gradient[1], brightness * 2.0);
-    } else {
-        float t = smoothstep(0.0, 1.0, (brightness - 0.5) * 2.0);
-        finalCol = mix(bar_gradient[1], bar_gradient[2], t);
+
+    if (useTexture) {
+        finalCol = texture(coverArt, uv).rgb;
+        
+        finalCol *= (brightness + 0.3);
+    }
+    else{
+        if (brightness < 0.5) {
+            finalCol = mix(bar_gradient[0], bar_gradient[1], brightness * 2.0);
+        } else {
+            float t = smoothstep(0.0, 1.0, (brightness - 0.5) * 2.0);
+            finalCol = mix(bar_gradient[1], bar_gradient[2], t);
+        }
     }
     
     FragColor = vec4(finalCol, 1.0);
