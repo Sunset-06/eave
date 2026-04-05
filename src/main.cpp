@@ -8,6 +8,7 @@ extern bool exit_flag;
 Mode current_mode = MODE_BARS;
 
 int main(int argc, char* argv[]) {
+    stbi_set_flip_vertically_on_load(true);
     std::thread audio_thread(aud_thread);
     std::thread video_thread(vis_thread);
     std::thread infor_thread(inf_thread);

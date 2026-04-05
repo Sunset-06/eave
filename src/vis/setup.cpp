@@ -14,13 +14,14 @@ unsigned int rect_indices[] = {
     1, 2, 3
 };
 
-float coverVertices[] = { // the + 0.2f is hacky but idc TODO change this
+/* float coverVertices[] = { // the + 0.2f is hacky but idc TODO change this // nvm, removed it
     -0.95f, -0.50f + 0.2f,  0.0f, 0.0f,
     -0.95f, -0.95f,  0.0f, 1.0f,
     -0.50f, -0.95f,  1.0f, 1.0f,
     -0.50f, -0.50f + 0.2f,  1.0f, 0.0f,
 };
 unsigned int coverIndices[] = { 0, 1, 2, 0, 2, 3 };
+ */
 
 float palettes[][9] = {
     {
@@ -99,15 +100,27 @@ SDL_HitTestResult DraggableCallback(SDL_Window* win, const SDL_Point* area, void
 
 // Sets the window up
 SDL_Window* Start_Window(SDL_Window* window){
+
+    SDL_DisplayMode dm;
+    if (SDL_GetDesktopDisplayMode(0, &dm) != 0) {
+        SDL_Log("SDL_GetDesktopDisplayMode failed: %s", SDL_GetError());
+        return NULL;
+    }
+
+    int padding = 50;
+    int xPos = dm.w - SCREEN_WIDTH - 20;
+    int yPos = padding;
+
     window = SDL_CreateWindow(
         "Look at those bars go",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
+        xPos,
+        yPos,
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |  SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS
     );
     SDL_SetWindowHitTest(window, DraggableCallback, NULL);
+    SDL_SetWindowAlwaysOnTop(window, SDL_FALSE);
 
 
     if (window == NULL) {
@@ -131,6 +144,28 @@ SDL_Window* Start_Window(SDL_Window* window){
 
     std::cout << "Glad Initialized\n";
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    SDL_SysWMinfo wmInfo;
+    SDL_VERSION(&wmInfo.version);
+    if (SDL_GetWindowWMInfo(window, &wmInfo)) {
+        Display* xdisplay = wmInfo.info.x11.display;
+        Window xwindow = wmInfo.info.x11.window;
+
+        Atom state = XInternAtom(xdisplay, "_NET_WM_STATE", False);
+        Atom skipTaskbar = XInternAtom(xdisplay, "_NET_WM_STATE_SKIP_TASKBAR", False);
+        Atom skipPager = XInternAtom(xdisplay, "_NET_WM_STATE_SKIP_PAGER", False);
+        Atom sticky = XInternAtom(xdisplay, "_NET_WM_STATE_STICKY", False);
+
+        Atom atoms[] = { skipTaskbar, skipPager, sticky };
+        XChangeProperty(xdisplay, xwindow, state, XA_ATOM, 32, 
+                        PropModeReplace, (unsigned char*)atoms, 3);
+
+        // Set Window Type to DESKTOP (Stays at the bottom)
+        Atom windowType = XInternAtom(xdisplay, "_NET_WM_WINDOW_TYPE", False);
+        Atom typeDesktop = XInternAtom(xdisplay, "_NET_WM_WINDOW_TYPE_DESKTOP", False);
+        XChangeProperty(xdisplay, xwindow, windowType, XA_ATOM, 32, 
+                        PropModeReplace, (unsigned char*)&typeDesktop, 1);
+    }
 
     return window;
 }
@@ -199,7 +234,6 @@ GLuint loadTexture(const char* path) {
     glGenTextures(1, &textureID);
     
     int width, height, nrChannels;
-    // stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load(path, &width, &height, &nrChannels, 0);
     
     if (data) {
@@ -220,7 +254,7 @@ GLuint loadTexture(const char* path) {
     }
     return textureID;
 }
-
+/* 
 void Bind_CoverObjects() {
     glGenVertexArrays(1, &coverVAO);
     glGenBuffers(1, &coverVBO);
@@ -241,4 +275,4 @@ void Bind_CoverObjects() {
     // TexCoords (Location 1)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
-}
+} */

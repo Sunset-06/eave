@@ -6,9 +6,12 @@
 #include <SDL2/SDL.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <SDL2/SDL_syswm.h>
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
 
-const int SCREEN_WIDTH = 720;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 480;
+const int SCREEN_HEIGHT = 400;
 
 // Movement Modifiers
 const float accel_up = 0.5f;
@@ -57,7 +60,7 @@ extern const char *barsVertexShaderSrc;
 extern const char *waveVertexShaderSrc;
 extern const char *defFragShaderSrc;
 
-extern const char *coverFragShaderSrc;
-extern const char *coverVertexShaderSrc;
+// extern const char *coverFragShaderSrc;
+// extern const char *coverVertexShaderSrc;
 
 #endif 

@@ -10,6 +10,7 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(X11 REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PULSE REQUIRED libpulse-simple)
 
@@ -37,6 +38,7 @@ target_link_libraries(eave PRIVATE
     SDL2::SDL2
     OpenGL::GL
     ${PULSE_LIBRARIES}
+    ${X11_LIBRARIES}
 )
 
 target_compile_definitions(eave PRIVATE 

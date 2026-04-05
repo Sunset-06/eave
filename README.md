@@ -2,6 +2,8 @@
 
 A simple audio visualizer using OpenGL and PulseAudio.
 
+This is now dependent on X11, so sorry Wayland users, you're missing out on peak.
+
 ## Get it to Work
 
 First, compile the binary

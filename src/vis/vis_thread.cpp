@@ -19,14 +19,14 @@ const char *waveVertexShaderSrc =
 const char *defFragShaderSrc =
 #include "shaders/newfrag.glsl"
 "";
-
+/* 
 const char *coverVertexShaderSrc =
 #include "shaders/covervrtx.glsl"
 "";
 
 const char *coverFragShaderSrc =
 #include "shaders/coverfrag.glsl"
-"";
+""; */
 
 
 int vis_thread(){
@@ -49,7 +49,7 @@ int vis_thread(){
 
     unsigned int barProgram = Create_Shader_Program(barsVertexShaderSrc, defFragShaderSrc);
     unsigned int waveProgram = Create_Shader_Program(waveVertexShaderSrc, defFragShaderSrc);
-    unsigned int coverProgram = Create_Shader_Program(coverVertexShaderSrc, coverFragShaderSrc);
+    // unsigned int coverProgram = Create_Shader_Program(coverVertexShaderSrc, coverFragShaderSrc);
 
     // Cache the uniform locations for Bars
     int bTimeLoc      = glGetUniformLocation(barProgram, "time");
@@ -70,10 +70,10 @@ int vis_thread(){
     int wCoverTexLoc = glGetUniformLocation(waveProgram, "coverArt");
 
     //Cache for album art
-    int coverLoc = glGetUniformLocation(coverProgram, "resolution");
+    // int coverLoc = glGetUniformLocation(coverProgram, "resolution");
 
     Bind_GLObjects();
-    Bind_CoverObjects();
+    //Bind_CoverObjects();
 
     SDL_Event e;
 
@@ -189,7 +189,7 @@ int vis_thread(){
                 } else {
                     glUniform3fv(wGradLoc, 3, palettes[currPalette]);
                 }
-                
+
                 glUniform1f(wTimeLoc, time);
                 glUniform3fv(wGradLoc, 3, palettes[currPalette]);
                 glUniform2f(wResLoc, (float)w, (float)h);
@@ -202,7 +202,7 @@ int vis_thread(){
                 break;
         }
         
-        if (coverTex != 0) {
+        /* if (coverTex != 0) {
             glUseProgram(coverProgram);
             glUniform1i(bUseTexLoc, textureMode);
 
@@ -213,7 +213,7 @@ int vis_thread(){
             
             glBindVertexArray(coverVAO);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        }
+        } */
 
         SDL_GL_SwapWindow(window);
     }

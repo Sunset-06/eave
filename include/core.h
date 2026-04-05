@@ -13,7 +13,7 @@
 #define GREET "\nBye Bye\n"
 
 #define BUFFER_SIZE 512
-#define BARS 20
+#define BARS 18
 
 enum Mode { MODE_BARS, MODE_WAVE };
 
